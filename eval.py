@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 
 
 def main(cfg):
-    print('...Evaluating on 3DPW test set...')
+    print('...Evaluating on {} test set...'.format(cfg.TRAIN.DATASET_EVAL))
 
     model = VIBE(
         n_layers=cfg.MODEL.TGRU.NUM_LAYERS,
@@ -56,6 +56,7 @@ def main(cfg):
         model=model,
         device=cfg.DEVICE,
         test_loader=test_loader,
+        data_name=cfg.TRAIN.DATASET_EVAL
     ).run()
 
 
