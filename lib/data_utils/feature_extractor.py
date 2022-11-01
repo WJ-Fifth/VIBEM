@@ -12,7 +12,8 @@
 # der Wissenschaften e.V. (MPG). acting on behalf of its Max Planck Institute
 # for Intelligent Systems. All rights reserved.
 #
-# Contact: ps-license@tuebingen.mpg.de
+# Improve by JInwu Wang u7354172
+# Use more backbone to feature extractor
 
 import os
 import torch
@@ -24,8 +25,13 @@ from lib.utils.vis import batch_visualize_preds
 from lib.data_utils.img_utils import get_single_image_crop, convert_cvimg_to_tensor
 
 
-def extract_features(model, video, bbox, debug=False, batch_size=200, kp_2d=None, dataset=None, scale=1.3):
+def extract_features(model, video, bbox, debug=False, batch_size=200,
+                     kp_2d=None, dataset=None, scale=1.3, model_name='spin'):
     '''
+    :param scale:
+    :param dataset:
+    :param kp_2d:
+    :param model_name:
     :param model: pretrained HMR model, use lib/models/hmr.py:get_pretrained_hmr()
     :param video: video filename, torch.Tensor in shape (num_frames,W,H,C)
     :param bbox: bbox array in shape (T,4)
@@ -49,7 +55,7 @@ def extract_features(model, video, bbox, debug=False, batch_size=200, kp_2d=None
     if debug and kp_2d is not None:
         import cv2
         if isinstance(video[0], np.str_):
-            print(video[0])
+            # print(video[0])
             frame = cv2.cvtColor(cv2.imread(video[0]), cv2.COLOR_BGR2RGB)
         elif isinstance(video[0], np.ndarray):
             frame = video[0]
@@ -58,9 +64,9 @@ def extract_features(model, video, bbox, debug=False, batch_size=200, kp_2d=None
         for i in range(kp_2d.shape[1]):
             frame = cv2.circle(
                 frame.copy(),
-                (int(kp_2d[0,i,0]), int(kp_2d[0,i,1])),
+                (int(kp_2d[0, i, 0]), int(kp_2d[0, i, 1])),
                 thickness=3,
-                color=(255,0,0),
+                color=(255, 0, 0),
                 radius=3,
             )
 
@@ -82,16 +88,22 @@ def extract_features(model, video, bbox, debug=False, batch_size=200, kp_2d=None
     # split video into batches of frames
     frames = torch.split(video, batch_size)
 
+    # Use more backbone to feature extractor
+    print("Using {} Backbone.".format(model_name))
     with torch.no_grad():
         for images in frames:
 
             if not debug:
-                pred = model.feature_extractor(images)
+                if model_name == 'spin':
+                    pred = model.feature_extractor(images)
+                else:
+                    model = model.to(device)
+                    pred = model(images)
                 features.append(pred.cpu())
                 del pred, images
             else:
                 preds = model(images)
-                dataset = 'spin' # dataset if dataset else 'common'
+                dataset = 'spin'  # dataset if dataset else 'common'
                 result_image = batch_visualize_preds(
                     images,
                     preds[-1],

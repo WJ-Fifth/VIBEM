@@ -94,6 +94,7 @@ cfg.LOSS.D_MOTION_LOSS_W = 1.
 
 cfg.MODEL = CN()
 
+cfg.MODEL.BACKBONE = 'spin'
 cfg.MODEL.TEMPORAL_TYPE = 'gru'
 
 # GRU model hyperparams
@@ -123,7 +124,7 @@ def parse_args():
     parser.add_argument('--cfg', type=str, help='cfg file path')
 
     args = parser.parse_args()
-    print(args, end='\n\n')
+    # print(args, end='\n\n')
 
     cfg_file = args.cfg
     if args.cfg is not None:

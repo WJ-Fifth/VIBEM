@@ -1,18 +1,6 @@
 # -*- coding: utf-8 -*-
-
-# Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (MPG) is
-# holder of all proprietary rights on this computer program.
-# You can only use this computer program if you have closed
-# a license agreement with MPG or you get the right to use the computer
-# program from someone who is authorized to grant you that right.
-# Any use of the computer program without a valid license is prohibited and
-# liable to prosecution.
+# By JInwu Wang u7354172
 #
-# Copyright©2019 Max-Planck-Gesellschaft zur Förderung
-# der Wissenschaften e.V. (MPG). acting on behalf of its Max Planck Institute
-# for Intelligent Systems. All rights reserved.
-#
-# Contact: ps-license@tuebingen.mpg.de
 
 import sys
 
@@ -28,7 +16,7 @@ import pickle as pkl
 import os.path as osp
 from tqdm import tqdm
 
-from lib.models import spin
+from lib.models import spin, backbone
 from lib.data_utils.kp_utils import *
 from lib.core.config import VIBE_DB_DIR, VIBE_DATA_DIR
 from lib.utils.smooth_bbox import get_smooth_bbox_params
@@ -41,7 +29,7 @@ VIS_THRESH = 0.3
 MIN_KP = 6
 
 
-def read_data(folder):
+def read_data(folder, backbone_name):
     dataset = {
         'vid_name': [],
         'frame_id': [],
@@ -54,8 +42,10 @@ def read_data(folder):
         'features': [],
         # 'valid': [],
     }
-
-    model = spin.get_pretrained_hmr()
+    if backbone_name == 'resnet50' or backbone_name == 'resnext50_32x4d' or backbone_name == 'swin':
+        model = backbone.Backbone(backbone_name)
+    elif backbone_name == 'spin':
+        model = spin.get_pretrained_hmr()
 
     smpl = SMPL(SMPL_MODEL_DIR, batch_size=1, create_transl=False)
 
@@ -114,9 +104,8 @@ def read_data(folder):
     dataset['bbox'] = bbox
     # dataset['valid'].append(campose_valid[time_pt1:time_pt2])
 
-    features = extract_features(model, img_paths_array, bbox,
-                                kp_2d=j2d[time_pt1:time_pt2], debug=debug, dataset='3dpw', scale=1.2)
-
+    features = extract_features(model, img_paths_array, bbox, kp_2d=j2d[time_pt1:time_pt2], debug=debug,
+                                dataset='ssp3d', scale=1.2, model_name=backbone_name)
     dataset['features'] = features
 
     return dataset
@@ -126,10 +115,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir', type=str, help='dataset directory', default='data/ssp_3d')
     args = parser.parse_args()
-
     debug = False
 
-    dataset = read_data(args.dir)
+    dataset = read_data(folder=args.dir, backbone_name='spin')
     # print(dataset['vid_name'])
     # exit()
     joblib.dump(dataset, osp.join(VIBE_DB_DIR, 'ssp3d_test_db.pt'))

@@ -1,8 +1,7 @@
 import os
 import torch
 
-from lib.dataset import ThreeDPW
-from lib.dataset import ssp3d
+from lib.dataset import ThreeDPW, ssp3d, MPII3D
 from lib.models import VIBE
 from lib.core.evaluate import Evaluator
 from lib.core.config import parse_args
@@ -40,6 +39,8 @@ def main(cfg):
         test_db = ThreeDPW(set='test', seqlen=cfg.DATASET.SEQLEN, debug=cfg.DEBUG)
     elif cfg.TRAIN.DATASET_EVAL == 'ssp3d':
         test_db = ssp3d(set='test', seqlen=cfg.DATASET.SEQLEN, debug=cfg.DEBUG)
+    elif cfg.TRAIN.DATASET_EVAL == 'MPII3D':
+        test_db = MPII3D(set='val', seqlen=cfg.DATASET.SEQLEN, debug=cfg.DEBUG)
     else:
         print(f'{cfg.DATASET_EVAL} is not a available dataset!!!!')
         exit()

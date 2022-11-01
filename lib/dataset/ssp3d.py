@@ -23,7 +23,7 @@ class ssp3d(Dataset3D):
 
         is_train = False
         overlap = overlap if is_train else 0.
-        print('3DPW Dataset overlap ratio: ', overlap)
+        print('SSP_3D Dataset overlap ratio: ', overlap)
         super(ssp3d, self).__init__(
             set=set,
             folder=SSP3D_DIR,

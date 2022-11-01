@@ -360,18 +360,3 @@ def get_pretrained_hmr():
     model.load_state_dict(checkpoint['model'], strict=False)
     model.eval()
     return model
-
-
-if __name__ == "__main__":
-    from torchsummary import summary
-
-    # device = 'cuda'
-    model = hmr()
-    checkpoint = torch.load(osp.join(VIBE_DATA_DIR, 'spin_model_checkpoint.pth.tar'))
-    model.load_state_dict(checkpoint['model'], strict=False)
-    # model.eval()
-    # print(model)
-    r = resnet.resnet50(pretrained=True)
-
-    summary(model.feature_extractor, input_size=[(3, 512, 512)], device='cpu')
-

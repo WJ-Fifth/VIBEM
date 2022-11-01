@@ -143,7 +143,7 @@ Please see [`doc/train.md`](doc/train.md) for details on how to prepare them.
 Here we compare VIBE with recent state-of-the-art methods on 3D pose estimation datasets. Evaluation metric is
 Procrustes Aligned Mean Per Joint Position Error (PA-MPJPE) in mm.
 
-| Models       | 3DPW &#8595; | MPI-INF-3DHP &#8595; | H36M &#8595; | SSP_3D &#8595; |
+| Models       | 3DPW &#8595; | MPI-INF-3DHP &#8595; | H36M &#8595; | SSP_3D |
 |--------------|:----:|:------------:|:----:|:--------------:|
 | SPIN         | 59.2 |     67.5     | **41.1** |       -        |
 | Temporal HMR | 76.7 |     89.8     | 56.8 |       -        |
