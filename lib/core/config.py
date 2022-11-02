@@ -96,6 +96,7 @@ cfg.MODEL = CN()
 
 cfg.MODEL.BACKBONE = 'spin'
 cfg.MODEL.TEMPORAL_TYPE = 'gru'
+cfg.MODEL.DISCRIMINATOR = 'norm'
 
 # GRU model hyperparams
 cfg.MODEL.TGRU = CN()

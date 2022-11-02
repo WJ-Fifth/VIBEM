@@ -15,6 +15,7 @@
 # Contact: ps-license@tuebingen.mpg.de
 
 import os
+
 os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
 import torch
@@ -70,35 +71,38 @@ def main(cfg):
     )
 
     # ========= Initialize networks, optimizers and lr_schedulers ========= #
-    # generator = VIBE(
-    #     n_layers=cfg.MODEL.TGRU.NUM_LAYERS,
-    #     batch_size=cfg.TRAIN.BATCH_SIZE,
-    #     seqlen=cfg.DATASET.SEQLEN,
-    #     hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
-    #     pretrained=cfg.TRAIN.PRETRAINED_REGRESSOR,
-    #     add_linear=cfg.MODEL.TGRU.ADD_LINEAR,
-    #     bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
-    #     use_residual=cfg.MODEL.TGRU.RESIDUAL,
-    # ).to(cfg.DEVICE)
-    generator = VIBE_LSTM(
-        num_layers=cfg.MODEL.TGRU.NUM_LAYERS,
-        batch=cfg.TRAIN.BATCH_SIZE,
-        sequences=cfg.DATASET.SEQLEN,
-        hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
-        pre=cfg.TRAIN.PRETRAINED_REGRESSOR,
-        linear=cfg.MODEL.TGRU.ADD_LINEAR,
-        bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
-        residual=cfg.MODEL.TGRU.RESIDUAL,
-    ).to(cfg.DEVICE)
+    if cfg.MODEL.TEMPORAL_TYPE == 'gru':
+        generator = VIBE(
+            n_layers=cfg.MODEL.TGRU.NUM_LAYERS,
+            batch_size=cfg.TRAIN.BATCH_SIZE,
+            seqlen=cfg.DATASET.SEQLEN,
+            hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
+            pretrained=cfg.TRAIN.PRETRAINED_REGRESSOR,
+            add_linear=cfg.MODEL.TGRU.ADD_LINEAR,
+            bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
+            use_residual=cfg.MODEL.TGRU.RESIDUAL,
+        ).to(cfg.DEVICE)
+    elif cfg.MODEL.TEMPORAL_TYPE == 'lstm':
+        generator = VIBE_LSTM(
+            num_layers=cfg.MODEL.TGRU.NUM_LAYERS,
+            batch=cfg.TRAIN.BATCH_SIZE,
+            sequences=cfg.DATASET.SEQLEN,
+            hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
+            pre=cfg.TRAIN.PRETRAINED_REGRESSOR,
+            linear=cfg.MODEL.TGRU.ADD_LINEAR,
+            bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
+            residual=cfg.MODEL.TGRU.RESIDUAL,
+        ).to(cfg.DEVICE)
+    else:
+        print("wrong temporal type with {}".format(cfg.MODEL.TEMPORAL_TYPE))
+        exit()
 
     if cfg.TRAIN.PRETRAINED != '' and os.path.isfile(cfg.TRAIN.PRETRAINED):
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(cfg.TRAIN.PRETRAINED)
-        # checkpoint = torch.load(cfg.TRAIN.PRETRAINED)
-        # best_performance = checkpoint['performance']
-        # generator.load_state_dict(checkpoint['gen_state_dict'])
-        # print(f'==> Loaded pretrained model from {cfg.TRAIN.PRETRAINED}...')
-        # print(f'Performance on 3DPW test set {best_performance}')
+        checkpoint = torch.load(cfg.TRAIN.PRETRAINED)
+        best_performance = checkpoint['performance']
+        generator.load_state_dict(checkpoint['gen_state_dict'])
+        print(f'==> Loaded pretrained model from {cfg.TRAIN.PRETRAINED}...')
+        print(f'Performance on 3DPW test set {best_performance}')
     else:
         print(f'{cfg.TRAIN.PRETRAINED} is not a pretrained model!!!!')
 
@@ -110,27 +114,31 @@ def main(cfg):
         momentum=cfg.TRAIN.GEN_MOMENTUM,
     )
 
-    # motion_discriminator = MotionDiscriminator(
-    #     rnn_size=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
-    #     input_size=69,
-    #     num_layers=cfg.TRAIN.MOT_DISCR.NUM_LAYERS,
-    #     output_size=1,
-    #     feature_pool=cfg.TRAIN.MOT_DISCR.FEATURE_POOL,
-    #     attention_size=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.SIZE,
-    #     attention_layers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
-    #     attention_dropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
-    # ).to(cfg.DEVICE)
-
-    motion_discriminator = MotionDiscriminator_geo(
-        rsize=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
-        insize=69,
-        num_layers=cfg.TRAIN.MOT_DISCR.NUM_LAYERS,
-        outsize=1,
-        pool=cfg.TRAIN.MOT_DISCR.FEATURE_POOL,
-        atsize=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.SIZE,
-        atlayers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
-        atdropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
-    ).to(cfg.DEVICE)
+    if cfg.MODEL.DISCRIMINATOR == 'norm':
+        motion_discriminator = MotionDiscriminator(
+            rnn_size=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
+            input_size=69,
+            num_layers=cfg.TRAIN.MOT_DISCR.NUM_LAYERS,
+            output_size=1,
+            feature_pool=cfg.TRAIN.MOT_DISCR.FEATURE_POOL,
+            attention_size=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL != 'attention' else cfg.TRAIN.MOT_DISCR.ATT.SIZE,
+            attention_layers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL != 'attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
+            attention_dropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL != 'attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
+        ).to(cfg.DEVICE)
+    elif cfg.MODEL.DISCRIMINATOR == 'geo':
+        motion_discriminator = MotionDiscriminator_geo(
+            rsize=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
+            insize=69,
+            num_layers=cfg.TRAIN.MOT_DISCR.NUM_LAYERS,
+            outsize=1,
+            pool=cfg.TRAIN.MOT_DISCR.FEATURE_POOL,
+            atsize=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL != 'attention' else cfg.TRAIN.MOT_DISCR.ATT.SIZE,
+            atlayers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL != 'attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
+            atdropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL != 'attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
+        ).to(cfg.DEVICE)
+    else:
+        print("wrong DISCRIMINATOR with {}".format(cfg.MODEL.DISCRIMINATOR))
+        exit()
 
     dis_motion_optimizer = get_optimizer(
         model=motion_discriminator,

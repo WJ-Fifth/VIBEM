@@ -341,6 +341,7 @@ def main(args):
 
         if args.display:
             cv2.destroyAllWindows()
+        exit()
 
         # ========= Save rendered video ========= #
         vid_name = os.path.basename(video_file)

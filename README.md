@@ -132,7 +132,7 @@ Run the commands below to start training:
 
 ```shell script
 source scripts/prepare_training_data.sh
-python train.py --cfg configs/config.yaml
+python train.py --cfg configs/config_lstm_geoloss.yaml
 ```
 
 Note that the training datasets should be downloaded and prepared before running data processing script.

@@ -172,11 +172,11 @@ def prepare_output_dir(cfg, cfg_file):
 
     logdir = osp.join(cfg.OUTPUT_DIR, logdir)
     os.makedirs(logdir, exist_ok=True)
-    shutil.copy(src=cfg_file, dst=osp.join(cfg.OUTPUT_DIR, 'config.yaml'))
+    shutil.copy(src=cfg_file, dst=osp.join(cfg.OUTPUT_DIR, 'config_lstm_geoloss.yaml'))
 
     cfg.LOGDIR = logdir
 
     # save config
-    save_dict_to_yaml(cfg, osp.join(cfg.LOGDIR, 'config.yaml'))
+    save_dict_to_yaml(cfg, osp.join(cfg.LOGDIR, 'config_lstm_geoloss.yaml'))
 
     return cfg

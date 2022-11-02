@@ -15,10 +15,10 @@ LOSS:
   POSE_W: 60.0
   D_MOTION_LOSS_W: 0.5
 TRAIN:
-  BATCH_SIZE: 64
+  BATCH_SIZE: 32
   NUM_ITERS_PER_EPOCH: 500
-  PRETRAINED: 'data/vibe_data/vibe_model_w_3dpw.pth.tar'
-#  PRETRAINED: ''
+#  PRETRAINED: 'data/vibe_data/vibe_model_w_3dpw.pth.tar'
+  PRETRAINED: ''
   PRETRAINED_REGRESSOR: 'data/vibe_data/spin_model_checkpoint.pth.tar'
   RESUME: ''
   START_EPOCH: 0
@@ -31,7 +31,7 @@ TRAIN:
     - 'PennAction'
   DATASETS_3D:
     - 'ThreeDPW'
-#    - 'MPII3D'
+    - 'MPII3D'
   DATASET_EVAL: 'ssp3d'
   GEN_LR: 0.00005
   GEN_WD: 0.0
@@ -48,7 +48,7 @@ TRAIN:
       SIZE: 1024
       DROPOUT: 0.2
 MODEL:
-  BACKBONE: 'resnext50_32x4d'
+  BACKBONE: 'spin'
   TEMPORAL_TYPE: 'gru'
   TGRU:
     NUM_LAYERS: 2
