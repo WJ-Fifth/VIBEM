@@ -29,6 +29,7 @@ from lib.core.trainer import Trainer
 from lib.core.config import parse_args
 from lib.utils.utils import prepare_output_dir
 from lib.models import VIBE, MotionDiscriminator
+from lib.models import VIBE_LSTM, MotionDiscriminator_geo
 from lib.dataset.loaders import get_data_loaders
 from lib.utils.utils import create_logger, get_optimizer
 
@@ -69,23 +70,35 @@ def main(cfg):
     )
 
     # ========= Initialize networks, optimizers and lr_schedulers ========= #
-    generator = VIBE(
-        n_layers=cfg.MODEL.TGRU.NUM_LAYERS,
-        batch_size=cfg.TRAIN.BATCH_SIZE,
-        seqlen=cfg.DATASET.SEQLEN,
+    # generator = VIBE(
+    #     n_layers=cfg.MODEL.TGRU.NUM_LAYERS,
+    #     batch_size=cfg.TRAIN.BATCH_SIZE,
+    #     seqlen=cfg.DATASET.SEQLEN,
+    #     hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
+    #     pretrained=cfg.TRAIN.PRETRAINED_REGRESSOR,
+    #     add_linear=cfg.MODEL.TGRU.ADD_LINEAR,
+    #     bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
+    #     use_residual=cfg.MODEL.TGRU.RESIDUAL,
+    # ).to(cfg.DEVICE)
+    generator = VIBE_LSTM(
+        num_layers=cfg.MODEL.TGRU.NUM_LAYERS,
+        batch=cfg.TRAIN.BATCH_SIZE,
+        sequences=cfg.DATASET.SEQLEN,
         hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
-        pretrained=cfg.TRAIN.PRETRAINED_REGRESSOR,
-        add_linear=cfg.MODEL.TGRU.ADD_LINEAR,
+        pre=cfg.TRAIN.PRETRAINED_REGRESSOR,
+        linear=cfg.MODEL.TGRU.ADD_LINEAR,
         bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
-        use_residual=cfg.MODEL.TGRU.RESIDUAL,
+        residual=cfg.MODEL.TGRU.RESIDUAL,
     ).to(cfg.DEVICE)
 
     if cfg.TRAIN.PRETRAINED != '' and os.path.isfile(cfg.TRAIN.PRETRAINED):
-        checkpoint = torch.load(cfg.TRAIN.PRETRAINED)
-        best_performance = checkpoint['performance']
-        generator.load_state_dict(checkpoint['gen_state_dict'])
-        print(f'==> Loaded pretrained model from {cfg.TRAIN.PRETRAINED}...')
-        print(f'Performance on 3DPW test set {best_performance}')
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(cfg.TRAIN.PRETRAINED)
+        # checkpoint = torch.load(cfg.TRAIN.PRETRAINED)
+        # best_performance = checkpoint['performance']
+        # generator.load_state_dict(checkpoint['gen_state_dict'])
+        # print(f'==> Loaded pretrained model from {cfg.TRAIN.PRETRAINED}...')
+        # print(f'Performance on 3DPW test set {best_performance}')
     else:
         print(f'{cfg.TRAIN.PRETRAINED} is not a pretrained model!!!!')
 
@@ -97,15 +110,26 @@ def main(cfg):
         momentum=cfg.TRAIN.GEN_MOMENTUM,
     )
 
-    motion_discriminator = MotionDiscriminator(
-        rnn_size=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
-        input_size=69,
+    # motion_discriminator = MotionDiscriminator(
+    #     rnn_size=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
+    #     input_size=69,
+    #     num_layers=cfg.TRAIN.MOT_DISCR.NUM_LAYERS,
+    #     output_size=1,
+    #     feature_pool=cfg.TRAIN.MOT_DISCR.FEATURE_POOL,
+    #     attention_size=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.SIZE,
+    #     attention_layers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
+    #     attention_dropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
+    # ).to(cfg.DEVICE)
+
+    motion_discriminator = MotionDiscriminator_geo(
+        rsize=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
+        insize=69,
         num_layers=cfg.TRAIN.MOT_DISCR.NUM_LAYERS,
-        output_size=1,
-        feature_pool=cfg.TRAIN.MOT_DISCR.FEATURE_POOL,
-        attention_size=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.SIZE,
-        attention_layers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
-        attention_dropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
+        outsize=1,
+        pool=cfg.TRAIN.MOT_DISCR.FEATURE_POOL,
+        atsize=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.SIZE,
+        atlayers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
+        atdropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL !='attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
     ).to(cfg.DEVICE)
 
     dis_motion_optimizer = get_optimizer(

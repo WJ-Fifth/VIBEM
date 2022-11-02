@@ -120,5 +120,5 @@ if __name__ == '__main__':
     dataset = read_data(folder=args.dir, backbone_name='spin')
     # print(dataset['vid_name'])
     # exit()
-    joblib.dump(dataset, osp.join(VIBE_DB_DIR, 'ssp3d_test_db.pt'))
+    joblib.dump(dataset, osp.join(VIBE_DB_DIR, 'ssp3d_val_db.pt'))
     print("ssp3d_test_db set success !!!")

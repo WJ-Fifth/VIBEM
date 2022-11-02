@@ -26,21 +26,21 @@ def read_openpose(json_file, gt_part, dataset):
     people = json_data['people']
     if len(people) == 0:
         # no openpose detection
-        keyp25 = np.zeros([25, 3])
+        keyp25 = np.zeros([25,3])
     else:
         # size of person in pixels
-        scale = max(max(gt_part[:, 0]) - min(gt_part[:, 0]), max(gt_part[:, 1]) - min(gt_part[:, 1]))
+        scale = max(max(gt_part[:,0])-min(gt_part[:,0]),max(gt_part[:,1])-min(gt_part[:,1]))
         # go through all people and find a match
-        dist_conf = np.inf * np.ones(len(people))
+        dist_conf = np.inf*np.ones(len(people))
         for i, person in enumerate(people):
             # openpose keypoints
-            op_keyp25 = np.reshape(person['pose_keypoints_2d'], [25, 3])
+            op_keyp25 = np.reshape(person['pose_keypoints_2d'], [25,3])
             op_keyp12 = op_keyp25[op_to_12, :2]
             op_conf12 = op_keyp25[op_to_12, 2:3] > 0
             # all the relevant joints should be detected
             if min(op_conf12) > 0:
                 # weighted distance of keypoints
-                dist_conf[i] = np.mean(np.sqrt(np.sum(op_conf12 * (op_keyp12 - gt_part[:12, :2]) ** 2, axis=1)))
+                dist_conf[i] = np.mean(np.sqrt(np.sum(op_conf12*(op_keyp12 - gt_part[:12, :2])**2, axis=1)))
         # closest match
         p_sel = np.argmin(dist_conf)
         # the exact threshold is not super important but these are the values we used
@@ -51,10 +51,10 @@ def read_openpose(json_file, gt_part, dataset):
         else:
             thresh = 0
         # dataset-specific thresholding based on pixel size of person
-        if min(dist_conf) / scale > 0.1 and min(dist_conf) < thresh:
-            keyp25 = np.zeros([25, 3])
+        if min(dist_conf)/scale > 0.1 and min(dist_conf) < thresh:
+            keyp25 = np.zeros([25,3])
         else:
-            keyp25 = np.reshape(people[p_sel]['pose_keypoints_2d'], [25, 3])
+            keyp25 = np.reshape(people[p_sel]['pose_keypoints_2d'], [25,3])
     return keyp25
 
 
@@ -110,10 +110,13 @@ def read_data_train(dataset_path, debug=False):
             for j, vid_i in enumerate(vid_list):
                 # image folder
                 imgs_path = os.path.join(seq_path,
-                                         'video_' + str(vid_i))
+                                         'img_' + str(vid_i))
+                # print(imgs_path)
                 # per frame
-                pattern = os.path.join(imgs_path, '*.jpg')
+                pattern = os.path.join(imgs_path+ '*.jpg')
+
                 img_list = sorted(glob.glob(pattern))
+
                 vid_used_frames = []
                 vid_used_joints = []
                 vid_used_bbox = []
@@ -124,8 +127,8 @@ def read_data_train(dataset_path, debug=False):
                     # for each image we store the relevant annotations
                     img_name = img_i.split('/')[-1]
                     joints_2d_raw = np.reshape(annot2[vid_i][0][i], (1, 28, 2))
-                    joints_2d_raw = np.append(joints_2d_raw, np.ones((1, 28, 1)), axis=2)
-                    joints_2d = convert_kps(joints_2d_raw, "mpii3d", "spin").reshape((-1, 3))
+                    joints_2d_raw= np.append(joints_2d_raw, np.ones((1,28,1)), axis=2)
+                    joints_2d = convert_kps(joints_2d_raw, "mpii3d",  "spin").reshape((-1,3))
 
                     # visualize = True
                     # if visualize == True and i == 500:
@@ -152,7 +155,7 @@ def read_data_train(dataset_path, debug=False):
                     #     plt.show()
 
                     joints_3d_raw = np.reshape(annot3[vid_i][0][i], (1, 28, 3)) / 1000
-                    joints_3d = convert_kps(joints_3d_raw, "mpii3d", "spin").reshape((-1, 3))
+                    joints_3d = convert_kps(joints_3d_raw, "mpii3d", "spin").reshape((-1,3))
 
                     bbox = get_bbox_from_kp2d(joints_2d[~np.all(joints_2d == 0, axis=1)]).reshape(4)
 
@@ -163,8 +166,8 @@ def read_data_train(dataset_path, debug=False):
                     y_in = np.logical_and(joints_2d[:, 1] < h, joints_2d[:, 1] >= 0)
                     ok_pts = np.logical_and(x_in, y_in)
                     if np.sum(ok_pts) < joints_2d.shape[0]:
-                        vid_uniq_id = "_".join(vid_uniq_id.split("_")[:-1]) + "_seg" + \
-                                      str(int(dataset['vid_name'][-1].split("_")[-1][3:]) + 1)
+                        vid_uniq_id = "_".join(vid_uniq_id.split("_")[:-1])+ "_seg" +\
+                                          str(int(dataset['vid_name'][-1].split("_")[-1][3:])+1)
                         continue
 
                     dataset['vid_name'].append(vid_uniq_id)
@@ -178,16 +181,16 @@ def read_data_train(dataset_path, debug=False):
                     vid_used_joints.append(joints_2d)
                     vid_used_bbox.append(bbox)
 
-                vid_segments = np.array(vid_segments)
-                ids = np.zeros((len(set(vid_segments)) + 1))
+                vid_segments= np.array(vid_segments)
+                ids = np.zeros((len(set(vid_segments))+1))
                 ids[-1] = len(vid_used_frames) + 1
                 if (np.where(vid_segments[:-1] != vid_segments[1:])[0]).size != 0:
                     ids[1:-1] = (np.where(vid_segments[:-1] != vid_segments[1:])[0]) + 1
 
                 for i in tqdm(range(len(set(vid_segments)))):
-                    features = extract_features(model, np.array(vid_used_frames)[int(ids[i]):int(ids[i + 1])],
-                                                vid_used_bbox[int(ids[i]):int((ids[i + 1]))],
-                                                kp_2d=np.array(vid_used_joints)[int(ids[i]):int(ids[i + 1])],
+                    features = extract_features(model, np.array(vid_used_frames)[int(ids[i]):int(ids[i+1])],
+                                                vid_used_bbox[int(ids[i]):int((ids[i+1]))],
+                                                kp_2d=np.array(vid_used_joints)[int(ids[i]):int(ids[i+1])],
                                                 dataset='spin', debug=False)
                     dataset['features'].append(features)
 
@@ -199,6 +202,7 @@ def read_data_train(dataset_path, debug=False):
 
 
 def read_test_data(dataset_path):
+
     dataset = {
         'vid_name': [],
         'frame_id': [],
@@ -232,19 +236,17 @@ def read_test_data(dataset_path):
         vid_segments = []
         vid_uniq_id = "subj" + str(user_i) + "_seg0"
 
+
         for frame_i, valid_i in tqdm(enumerate(valid)):
 
             img_i = os.path.join('mpi_inf_3dhp_test_set',
-                                 'TS' + str(user_i),
-                                 'imageSequence',
-                                 'img_' + str(frame_i + 1).zfill(6) + '.jpg')
-            # test_img = os.path.join('mpi_inf_3dhp_test_set',
-            #                         'TS' + str(user_i),
-            #                         'imageSequence',
-            #                         'img_' + str(5654 + 1).zfill(6) + '.jpg')
+                                    'TS' + str(user_i),
+                                    'imageSequence',
+                                    'img_' + str(frame_i + 1).zfill(6) + '.jpg')
 
-            joints_2d_raw = np.expand_dims(annot2[frame_i, 0, :, :], axis=0)
+            joints_2d_raw = np.expand_dims(annot2[frame_i, 0, :, :], axis = 0)
             joints_2d_raw = np.append(joints_2d_raw, np.ones((1, 17, 1)), axis=2)
+
 
             joints_2d = convert_kps(joints_2d_raw, src="mpii3d_test", dst="spin").reshape((-1, 3))
 
@@ -273,20 +275,14 @@ def read_test_data(dataset_path):
 
             joints_3d_raw = np.reshape(annot3[frame_i, 0, :, :], (1, 17, 3)) / 1000
             joints_3d = convert_kps(joints_3d_raw, "mpii3d_test", "spin").reshape((-1, 3))
-            joints_3d = joints_3d - joints_3d[39]  # substract pelvis zero is the root for test
+            joints_3d = joints_3d - joints_3d[39] # substract pelvis zero is the root for test
 
             bbox = get_bbox_from_kp2d(joints_2d[~np.all(joints_2d == 0, axis=1)]).reshape(4)
 
+
             # check that all joints are visible
             img_file = os.path.join(dataset_path, img_i)
-            # test_file = os.path.join(dataset_path, test_img)
-            # T = cv2.imread(test_file)
-            # print()
-            # print(test_img)
-            # print(T.shape)
-            # exit()
             I = cv2.imread(img_file)
-            # print(type(I))
             h, w, _ = I.shape
             x_in = np.logical_and(joints_2d[:, 0] < w, joints_2d[:, 0] >= 0)
             y_in = np.logical_and(joints_2d[:, 1] < h, joints_2d[:, 1] >= 0)
@@ -296,6 +292,7 @@ def read_test_data(dataset_path):
                 vid_uniq_id = "_".join(vid_uniq_id.split("_")[:-1]) + "_seg" + \
                               str(int(dataset['vid_name'][-1].split("_")[-1][3:]) + 1)
                 continue
+
 
             dataset['vid_name'].append(vid_uniq_id)
             dataset['frame_id'].append(img_file.split("/")[-1].split(".")[0])
@@ -329,16 +326,13 @@ def read_test_data(dataset_path):
 
     return dataset
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir', type=str, help='dataset directory', default='data/mpii_3d')
     args = parser.parse_args()
 
-    dataset = read_test_data(args.dir)
-    joblib.dump(dataset, osp.join(VIBE_DB_DIR, 'mpii3d_val_db.pt'))
-    print("test dataset load success!!!")
-    exit()
+    # dataset = read_test_data(args.dir)
+    # joblib.dump(dataset, osp.join(VIBE_DB_DIR, 'mpii3d_test_db.pt'))
 
     dataset = read_data_train(args.dir)
     joblib.dump(dataset, osp.join(VIBE_DB_DIR, 'mpii3d_train_db.pt'))

@@ -177,3 +177,13 @@ class VIBE_Demo(nn.Module):
             s['rotmat'] = s['rotmat'].reshape(batch_size, seqlen, -1, 3, 3)
 
         return smpl_output
+
+
+if __name__ == "__main__":
+    from torchsummary import summary
+
+    input_size = (16, 2048)
+
+    model = VIBE(seqlen=16, batch_size=64)
+    print(model)
+    exit()
