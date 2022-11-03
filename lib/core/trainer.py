@@ -364,7 +364,7 @@ class Trainer():
         if is_best:
             logger.info('Best performance achived, saving it!')
             self.best_performance = performance
-            shutil.copyfile(filename, osp.join(self.logdir, 'model_best_lstm_l2sgan.pth.tar'))
+            shutil.copyfile(filename, osp.join(self.logdir, 'model_best.pth.tar'))
 
             with open(osp.join(self.logdir, 'best.txt'), 'w') as f:
                 f.write(str(float(performance)))
