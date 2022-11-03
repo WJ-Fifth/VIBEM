@@ -445,7 +445,7 @@ def get_regressor_output(features):
     model = Regressor().to(device)
 
     smpl = SMPL(SMPL_MODEL_DIR).to(device)
-    pretrained = torch.load('models/model_best.pth.tar')['gen_state_dict']
+    pretrained = torch.load('models/model_best_lstm_l2sgan.pth.tar')['gen_state_dict']
 
     new_pretrained_dict = {}
     for k, v in pretrained.items():

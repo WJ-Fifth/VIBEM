@@ -7,7 +7,7 @@ OUTPUT_DIR: 'results/vibe_tests'
 NUM_WORKERS: 8
 SEED_VALUE: -1
 DATASET:
-  SEQLEN: 16
+  SEQLEN: 1
 LOSS:
   KP_2D_W: 300.0
   KP_3D_W: 300.0
@@ -15,9 +15,9 @@ LOSS:
   POSE_W: 60.0
   D_MOTION_LOSS_W: 0.5
 TRAIN:
-  BATCH_SIZE: 32
+  BATCH_SIZE: 64
   NUM_ITERS_PER_EPOCH: 500
-  PRETRAINED: 'data/vibe_data/vibe_model_w_3dpw.pth.tar'
+  PRETRAINED: 'data/vibe_data/model_best_lstm_l2sgan.pth.tar'
 #  PRETRAINED: ''
   PRETRAINED_REGRESSOR: 'data/vibe_data/spin_model_checkpoint.pth.tar'
   RESUME: ''
@@ -26,13 +26,13 @@ TRAIN:
   LR_PATIENCE: 5
   DATA_2D_RATIO: 0.6
   DATASETS_2D:
-#    - 'Insta'
+    - 'Insta'
 #    - 'PoseTrack'
     - 'PennAction'
   DATASETS_3D:
     - 'ThreeDPW'
     - 'MPII3D'
-  DATASET_EVAL: 'ThreeDPW'
+  DATASET_EVAL: 'ssp3d'
   GEN_LR: 0.00005
   GEN_WD: 0.0
   MOT_DISCR:
@@ -48,7 +48,7 @@ TRAIN:
       SIZE: 1024
       DROPOUT: 0.2
 MODEL:
-  TEMPORAL_TYPE: 'gru'
+  TEMPORAL_TYPE: 'lstm'
   DISCRIMINATOR: 'geo'
   TGRU:
     NUM_LAYERS: 2
