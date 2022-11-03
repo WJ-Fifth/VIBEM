@@ -42,11 +42,12 @@ class VIBELoss(nn.Module):
         self.criterion_keypoints = nn.MSELoss(reduction='none').to(self.device)
         self.criterion_regr = nn.MSELoss().to(self.device)
 
-        # self.enc_loss = batch_encoder_disc_l2_loss
-        # self.dec_loss = batch_adv_disc_l2_loss
 
-        self.enc_loss = geometricGAN_G_loss
-        self.dec_loss = geometricGAN_D_loss
+        self.enc_loss = batch_encoder_disc_l2_loss
+        self.dec_loss = batch_adv_disc_l2_loss
+
+        # self.enc_loss = geometricGAN_G_loss
+        # self.dec_loss = geometricGAN_D_loss
 
     def forward(
             self,
@@ -243,6 +244,28 @@ def geometricGAN_D_loss(real_disc_value, fake_disc_value):
     lb = torch.sum(torch.max(zero, (1 + fake_disc_value))) / kb
     la = torch.sum(torch.max(zero, (1 - real_disc_value))) / ka
     return la, lb, la + lb
+
+### Geometric GAN (hinge loss)
+def L2_Sensitive_G_loss(disc_value):
+    '''
+        Inputs:
+            disc_value: N x 25
+    '''
+    k = disc_value.shape[0]
+    return torch.sum((disc_value - 1.0) ** 2) * 1.0 / k
+
+
+def L2_Sensitive_D_loss(real_disc_value, fake_disc_value):
+    '''
+        Inputs:
+            disc_value: N x 25
+    '''
+    ka = real_disc_value.shape[0]
+    kb = fake_disc_value.shape[0]
+    lb, la = torch.sum(fake_disc_value ** 2) / kb, torch.sum((real_disc_value - 1) ** 2) / ka
+    lc = torch.sum((fake_disc_value - real_disc_value)**2) / (ka + kb)
+    return la, lb, la + lb + lc
+
 
 
 def batch_encoder_disc_wasserstein_loss(disc_value):
