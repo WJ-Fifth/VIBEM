@@ -30,6 +30,7 @@ from multi_person_tracker import MPT
 from torch.utils.data import DataLoader
 
 from lib.models.vibe import VIBE_Demo
+from lib.models.vibe_lstm import VIBE_LSTM_Demo, VIBE_LSTM
 from lib.utils.renderer import Renderer
 from lib.dataset.inference import Inference
 from lib.utils.smooth_pose import smooth_pose
@@ -80,7 +81,7 @@ def main(args):
     total_time = time.time()
 
     # ========= Run tracking ========= #
-    bbox_scale = 1.1
+    bbox_scale = 1.0
     if args.tracking_method == 'pose':
         if not os.path.isabs(video_file):
             video_file = os.path.join(os.getcwd(), video_file)
@@ -110,10 +111,16 @@ def main(args):
         add_linear=True,
         use_residual=True,
     ).to(device)
+    # model = VIBE_LSTM_Demo(
+    #     sequences=16,
+    #     num_layers=2,
+    #     hidden_size=1024,
+    #     linear=True,
+    # ).to(device)
 
     # ========= Load pretrained weights ========= #
-    pretrained_file = download_ckpt(use_3dpw=False)
-    # pretrained_file = 'data/vibe_data/model_best_gru_l2sgan.pth.tar'
+    pretrained_file = download_ckpt(use_3dpw=True)
+    # pretrained_file = 'data/vibe_data/model_best_lstm_l2sgan.pth.tar'
     ckpt = torch.load(pretrained_file)
     print(f'Performance of pretrained model on 3DPW: {ckpt["performance"]}')
     ckpt = ckpt['gen_state_dict']
