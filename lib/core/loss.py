@@ -223,6 +223,7 @@ def batch_adv_disc_l2_loss(real_disc_value, fake_disc_value):
 
 
 ### Geometric GAN (hinge loss)
+# Imply by mengfan Yan
 def geometricGAN_G_loss(disc_value):
     '''
         Inputs:
@@ -233,6 +234,7 @@ def geometricGAN_G_loss(disc_value):
     return -torch.sum(disc_value) * 1.0 / k
 
 
+# Imply by mengfan Yan
 def geometricGAN_D_loss(real_disc_value, fake_disc_value):
     '''
         Inputs:

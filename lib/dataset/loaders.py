@@ -62,6 +62,12 @@ def get_data_loaders(cfg):
     # ===== Motion Discriminator dataset =====
     motion_disc_db = AMASS(seqlen=cfg.DATASET.SEQLEN)
 
+    if 'human_ml3d' in cfg.DATASET:
+        adv_dataset = []
+        adv_dataset.append(motion_disc_db)
+        adv_dataset.append(HumanML3D(seqlen=cfg.DATASET.SEQLEN))
+        motion_disc_db = ConcatDataset(adv_dataset)
+
     motion_disc_loader = DataLoader(
         dataset=motion_disc_db,
         batch_size=cfg.TRAIN.BATCH_SIZE,

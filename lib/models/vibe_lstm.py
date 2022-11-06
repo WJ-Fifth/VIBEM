@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# By Mengfan Yan
+# The code refers to the vibe model implemented by VIBE
+
 import os
 import torch
 import os.path as osp
@@ -24,49 +28,36 @@ class TemporalEncoder(nn.Module):
         residual:
     """
 
-    def __init__(self, num_layers=1, hidden_size=2048, linear=False, bidirectional=False, residual=True):
+    def __init__(self, num_layers=1, hidden_size=2048, add_linear=False, bidirectional=False, residual=True):
         super(TemporalEncoder, self).__init__()
-        # define with nn.GRU()
-        # self.gru = nn.GRU(input_size=2048, hidden_size=hidden_size, bidirectional=bidirectional, num_layers=num_layers)
-
         # define with nn.LSTM
-        self.lstm = nn.LSTM(input_size=2048, hidden_size=hidden_size, bidirectional=bidirectional,
+
+        self.lstm = nn.LSTM(input_size=2048,
+                            hidden_size=hidden_size,
+                            bidirectional=bidirectional,
                             num_layers=num_layers)
 
         # set one direction or two
-        # input size = 2048
-        if linear:
-            self.linear = nn.Linear(hidden_size, 2048)
-        elif bidirectional:
+        self.linear = None
+        if bidirectional:
             self.linear = nn.Linear(2 * hidden_size, 2048)
+        elif add_linear:
+            self.linear = nn.Linear(hidden_size, 2048)
+            # print("Test!!!=", self.linear)
         else:
             self.linear = None
         # set residual
+        # print("hidden_size=", self.linear)
         self.residual = residual
 
     def forward(self, x):
         # number, time frames, feature
         n, t, f = x.shape
         x = x.permute(1, 0, 2)  # NTF -> TNF
-        # gru size (sequences, batchsize, inputsize) -> (t,n,f)
-        # gru_output, gru_state = self.gru(x.permute(1,0,2))
 
         # LSTM
         lstm_output, lstm_state = self.lstm(x)
 
-        ### GRU
-        # if self.linear:
-        #     # active layer, (seq,batchsize,hidden)
-        #     gru_output = F.relu(gru_output)
-        #     gru_output = self.linear(gru_output.view(-1, 2048))
-        #     # set the default output formate
-        #     gru_output = gru_output.view(t,n,f)
-        # # use residual
-        # if self.residual and gru_output.shape[-1] == 2048:
-        #     gru_output += x
-        # # return to the input formate, (batchsize, sequences, inputsize)
-        # gru_output = gru_output.permute(1,0,2)
-        # return gru_output
 
         ### LSTM
         if self.linear:
@@ -109,7 +100,11 @@ class VIBE_LSTM(nn.Module):
         self.sequence = sequences
         self.batch = batch
         # set TemporalEncoder to encoder
-        self.encoder = TemporalEncoder(num_layers, hidden_size, linear, bidirectional, residual)
+        self.encoder = TemporalEncoder(num_layers=num_layers,
+                                       hidden_size=hidden_size,
+                                       add_linear=linear,
+                                       bidirectional=bidirectional,
+                                       residual=residual)
         # feed in regressor
         self.regressor = Regressor()
         # load pretrained model
@@ -122,10 +117,6 @@ class VIBE_LSTM(nn.Module):
         # input size (batchsize,sequence,feature)
         batch = input.shape[0]
         sequence = input.shape[1]
-        # TemporalEncoder
-        # lstm_output = self.encoder(input_size)
-        # regressor
-        # reg_output = self.regressor(lstm_output.reshape(-1, 2048), J_regressor=J_regressor)
 
         lstm_feature = self.encoder(input)
         lstm_feature = lstm_feature.reshape(-1, lstm_feature.size(-1))
@@ -141,7 +132,7 @@ class VIBE_LSTM(nn.Module):
         return smpl_output
 
 
-class VIBE_Demo(nn.Module):
+class VIBE_LSTM_Demo(nn.Module):
     """
     structure combine TE with Regressor
     TemporalEncoder + Regressor
@@ -158,15 +149,24 @@ class VIBE_Demo(nn.Module):
         hmr: pretained model to test
     """
 
-    def __init__(self, sequences, batch, num_layers=1, hidden_size=2048, linear=False, bidirectional=False,
+    def __init__(self, sequences, batch=64,
+                 num_layers=1,
+                 hidden_size=2048,
+                 linear=False,
+                 bidirectional=False,
                  residual=True,
                  pre=osp.join(VIBE_DATA_DIR, 'spin_model_checkpoint.pth.tar')):
-        super(VIBE_Demo, self).__init__()
+        super(VIBE_LSTM_Demo, self).__init__()
 
         self.sequence = sequences
         self.batch = batch
+        print(linear)
         # set TemporalEncoder to encoder
-        self.encoder = TemporalEncoder(num_layers, hidden_size, linear, bidirectional, residual)
+        self.encoder = TemporalEncoder(num_layers=num_layers,
+                                       hidden_size=hidden_size,
+                                       add_linear=linear,
+                                       bidirectional=bidirectional,
+                                       residual=residual)
         # pretrained model to test
         self.hmr = hmr()
         checkpoint = torch.load(pre)
@@ -190,7 +190,8 @@ class VIBE_Demo(nn.Module):
         # TemporalEncoder
         lstm_output = self.encoder(hmr_output.reshape(batch, sequence, -1))
         # regressor
-        reg_output = self.regressor(lstm_output.reshape(-1, 2048), J_regressor=regress)
+        lstm_output = lstm_output.reshape(-1, lstm_output.size(-1))
+        reg_output = self.regressor(lstm_output, J_regressor=regress)
         for k in reg_output:
             k['theta'] = k['theta'].reshape(batch, sequence, -1)
             k['verts'] = k['verts'].reshape(batch, sequence, -1, 3)
@@ -201,6 +202,7 @@ class VIBE_Demo(nn.Module):
         return reg_output
 
 
+## Test with VIBEM model
 if __name__ == "__main__":
     from torchsummary import summary
 
@@ -208,5 +210,4 @@ if __name__ == "__main__":
 
     model = VIBE_LSTM(sequences=16, batch=64)
     print(model)
-    exit()
     summary(model, input_size=[2048], device="cpu")

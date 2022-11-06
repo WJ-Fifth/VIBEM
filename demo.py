@@ -120,7 +120,7 @@ def main(args):
 
     # ========= Load pretrained weights ========= #
     pretrained_file = download_ckpt(use_3dpw=True)
-    # pretrained_file = 'data/vibe_data/model_best_lstm_l2sgan.pth.tar'
+    pretrained_file = 'data/vibe_data/model_best_gru_l2sgan.pth.tar'
     ckpt = torch.load(pretrained_file)
     print(f'Performance of pretrained model on 3DPW: {ckpt["performance"]}')
     ckpt = ckpt['gen_state_dict']

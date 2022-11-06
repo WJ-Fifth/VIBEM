@@ -1,16 +1,4 @@
 # -*- coding: utf-8 -*-
-
-# Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (MPG) is
-# holder of all proprietary rights on this computer program.
-# You can only use this computer program if you have closed
-# a license agreement with MPG or you get the right to use the computer
-# program from someone who is authorized to grant you that right.
-# Any use of the computer program without a valid license is prohibited and
-# liable to prosecution.
-#
-# Copyright©2019 Max-Planck-Gesellschaft zur Förderung
-# der Wissenschaften e.V. (MPG). acting on behalf of its Max Planck Institute
-# for Intelligent Systems. All rights reserved.
 #
 # Improve by JInwu Wang u7354172
 # Use more backbone to feature extractor
@@ -28,10 +16,10 @@ from lib.data_utils.img_utils import get_single_image_crop, convert_cvimg_to_ten
 def extract_features(model, video, bbox, debug=False, batch_size=200,
                      kp_2d=None, dataset=None, scale=1.3, model_name='spin'):
     '''
-    :param scale:
-    :param dataset:
-    :param kp_2d:
-    :param model_name:
+    :param scale: default
+    :param dataset: dataset that need to extractZ_features 2D or 3D datasets
+    :param kp_2d: the 2d keypoints
+    :param model_name: the backbone model name
     :param model: pretrained HMR model, use lib/models/hmr.py:get_pretrained_hmr()
     :param video: video filename, torch.Tensor in shape (num_frames,W,H,C)
     :param bbox: bbox array in shape (T,4)
@@ -89,7 +77,7 @@ def extract_features(model, video, bbox, debug=False, batch_size=200,
     frames = torch.split(video, batch_size)
 
     # Use more backbone to feature extractor
-    print("Using {} Backbone.".format(model_name))
+    # print("Using {} Backbone.".format(model_name))
     with torch.no_grad():
         for images in frames:
 

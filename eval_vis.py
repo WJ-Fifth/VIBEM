@@ -68,10 +68,10 @@ def main(args):
             del tracking_results[person_id]
 
     # ========= Define VIBE model ========= #
-    bbox_scale = 1.0
+    bbox_scale = 1.1
 
     model = VIBE_Demo(
-        seqlen=1,
+        seqlen=16,
         n_layers=2,
         hidden_size=1024,
         add_linear=True,

@@ -1,20 +1,11 @@
 # -*- coding: utf-8 -*-
-
-# Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (MPG) is
-# holder of all proprietary rights on this computer program.
-# You can only use this computer program if you have closed
-# a license agreement with MPG or you get the right to use the computer
-# program from someone who is authorized to grant you that right.
-# Any use of the computer program without a valid license is prohibited and
-# liable to prosecution.
-#
-# Copyright©2019 Max-Planck-Gesellschaft zur Förderung
-# der Wissenschaften e.V. (MPG). acting on behalf of its Max Planck Institute
-# for Intelligent Systems. All rights reserved.
-#
-# Contact: ps-license@tuebingen.mpg.de
+# Created by VIBE author
+# Fix and improve by JInwu Wang u7354172
+# Improve the code so that the code can also extract the sample and feature information of the 3DPW training data set,
+# and merge other backbones for feature extraction
 
 import sys
+
 sys.path.append('.')
 
 import os
@@ -39,8 +30,8 @@ NUM_JOINTS = 24
 VIS_THRESH = 0.3
 MIN_KP = 6
 
-def read_data(folder, set, debug=False):
 
+def read_data(folder, set, debug=False):
     dataset = {
         'vid_name': [],
         'frame_id': [],
@@ -81,7 +72,7 @@ def read_data(folder, set, debug=False):
             pose = torch.from_numpy(data['poses'][p_id]).float()
             shape = torch.from_numpy(data['betas'][p_id][:10]).float().repeat(pose.size(0), 1)
             trans = torch.from_numpy(data['trans'][p_id]).float()
-            j2d = data['poses2d'][p_id].transpose(0,2,1)
+            j2d = data['poses2d'][p_id].transpose(0, 2, 1)
 
             cam_pose = data['cam_poses']
             campose_valid = data['campose_valid'][p_id]
@@ -96,7 +87,7 @@ def read_data(folder, set, debug=False):
             pose[:, :3] = rot
             # ======== Align the mesh params ======== #
 
-            output = smpl(betas=shape, body_pose=pose[:,3:], global_orient=pose[:,:3], transl=trans)
+            output = smpl(betas=shape, body_pose=pose[:, 3:], global_orient=pose[:, :3], transl=trans)
             # verts = output.vertices
             j3d = output.joints
 
@@ -114,12 +105,12 @@ def read_data(folder, set, debug=False):
             bbox_params, time_pt1, time_pt2 = get_smooth_bbox_params(j2d, vis_thresh=VIS_THRESH, sigma=8)
 
             # process bbox_params
-            c_x = bbox_params[:,0]
-            c_y = bbox_params[:,1]
-            scale = bbox_params[:,2]
+            c_x = bbox_params[:, 0]
+            c_y = bbox_params[:, 1]
+            scale = bbox_params[:, 2]
             w = h = 150. / scale
             w = h = h * 1.1
-            bbox = np.vstack([c_x,c_y,w,h]).T
+            bbox = np.vstack([c_x, c_y, w, h]).T
 
             # process keypoints
             j2d[:, :, 2] = j2d[:, :, 2] > 0.3  # set the visibility flags
@@ -129,11 +120,8 @@ def read_data(folder, set, debug=False):
             j2d = j2d[:, perm_idxs]
             j2d[:, 12:, 2] = 0.0
 
-            # print('j2d', j2d[time_pt1:time_pt2].shape)
-            # print('campose', campose_valid[time_pt1:time_pt2].shape)
-
             img_paths_array = np.array(img_paths)[time_pt1:time_pt2]
-            dataset['vid_name'].append(np.array([f'{seq}_{p_id}']*num_frames)[time_pt1:time_pt2])
+            dataset['vid_name'].append(np.array([f'{seq}_{p_id}'] * num_frames)[time_pt1:time_pt2])
 
             dataset['frame_id'].append(np.arange(0, num_frames)[time_pt1:time_pt2])
 
@@ -144,7 +132,6 @@ def read_data(folder, set, debug=False):
             dataset['pose'].append(pose.numpy()[time_pt1:time_pt2])
             dataset['bbox'].append(bbox)
             dataset['valid'].append(campose_valid[time_pt1:time_pt2])
-
 
             features = extract_features(model, img_paths_array, bbox,
                                         kp_2d=j2d[time_pt1:time_pt2], debug=debug, dataset='3dpw', scale=1.2)

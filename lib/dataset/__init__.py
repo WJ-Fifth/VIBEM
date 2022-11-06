@@ -8,4 +8,5 @@ from .threedpw import ThreeDPW
 from .posetrack import PoseTrack
 from .penn_action import PennAction
 from .ssp3d import ssp3d
+from .human_ml3d import HumanML3D
 

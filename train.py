@@ -1,18 +1,8 @@
 # -*- coding: utf-8 -*-
-
-# Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (MPG) is
-# holder of all proprietary rights on this computer program.
-# You can only use this computer program if you have closed
-# a license agreement with MPG or you get the right to use the computer
-# program from someone who is authorized to grant you that right.
-# Any use of the computer program without a valid license is prohibited and
-# liable to prosecution.
-#
-# Copyright©2019 Max-Planck-Gesellschaft zur Förderung
-# der Wissenschaften e.V. (MPG). acting on behalf of its Max Planck Institute
-# for Intelligent Systems. All rights reserved.
-#
-# Contact: ps-license@tuebingen.mpg.de
+# created by VIBE authot
+# Improvement by JInwu Wang (u7354172)
+# The code has been optimized and improved
+# so that the module can be trained with different models and loss functions.
 
 import os
 
@@ -26,7 +16,7 @@ import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
 
 from lib.core.loss import VIBELoss
-from lib.core.trainer import Trainer
+from lib.core.main import Train
 from lib.core.config import parse_args
 from lib.utils.utils import prepare_output_dir
 from lib.models import VIBE, MotionDiscriminator
@@ -71,6 +61,7 @@ def main(cfg):
     )
 
     # ========= Initialize networks, optimizers and lr_schedulers ========= #
+    # selected the Temporal Encoder
     if cfg.MODEL.TEMPORAL_TYPE == 'gru':
         generator = VIBE(
             n_layers=cfg.MODEL.TGRU.NUM_LAYERS,
@@ -114,7 +105,8 @@ def main(cfg):
         momentum=cfg.TRAIN.GEN_MOMENTUM,
     )
 
-    if cfg.MODEL.DISCRIMINATOR == 'norm':
+    # selected the Motion Discriminator_geo base on gru or lstm
+    if cfg.MODEL.TEMPORAL_TYPE == 'gru':
         motion_discriminator = MotionDiscriminator(
             rnn_size=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
             input_size=69,
@@ -125,7 +117,7 @@ def main(cfg):
             attention_layers=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL != 'attention' else cfg.TRAIN.MOT_DISCR.ATT.LAYERS,
             attention_dropout=None if cfg.TRAIN.MOT_DISCR.FEATURE_POOL != 'attention' else cfg.TRAIN.MOT_DISCR.ATT.DROPOUT
         ).to(cfg.DEVICE)
-    elif cfg.MODEL.DISCRIMINATOR == 'geo':
+    elif cfg.MODEL.TEMPORAL_TYPE == 'lstm':
         motion_discriminator = MotionDiscriminator_geo(
             rsize=cfg.TRAIN.MOT_DISCR.HIDDEN_SIZE,
             insize=69,
@@ -165,8 +157,9 @@ def main(cfg):
     )
 
     # ========= Start Training ========= #
-    Trainer(
+    Train(
         data_loaders=data_loaders,
+        val_data_name=cfg.TRAIN.DATASET_EVAL,
         generator=generator,
         motion_discriminator=motion_discriminator,
         criterion=loss,
@@ -183,7 +176,6 @@ def main(cfg):
         motion_lr_scheduler=motion_lr_scheduler,
         resume=cfg.TRAIN.RESUME,
         num_iters_per_epoch=cfg.TRAIN.NUM_ITERS_PER_EPOCH,
-        debug_freq=cfg.DEBUG_FREQ,
     ).fit()
 
 

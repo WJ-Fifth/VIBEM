@@ -47,6 +47,7 @@ class TemporalEncoder(nn.Module):
             self.linear = nn.Linear(hidden_size*2, 2048)
         elif add_linear:
             self.linear = nn.Linear(hidden_size, 2048)
+            # print("Test!!!=", self.linear)
         self.use_residual = use_residual
 
     def forward(self, x):

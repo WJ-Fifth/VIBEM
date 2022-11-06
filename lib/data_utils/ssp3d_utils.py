@@ -40,7 +40,6 @@ def read_data(folder, backbone_name):
         'bbox': [],
         'img_name': [],
         'features': [],
-        # 'valid': [],
     }
     if backbone_name == 'resnet50' or backbone_name == 'resnext50_32x4d' or backbone_name == 'swin':
         model = backbone.Backbone(backbone_name)
@@ -58,7 +57,6 @@ def read_data(folder, backbone_name):
 
     num_people = len(data['poses'])
     num_frames = len(data['fnames'])
-    # print(data['fnames'][0])
 
     assert (data['joints2D'].shape[0] == num_frames)
 
@@ -94,7 +92,6 @@ def read_data(folder, backbone_name):
 
     img_paths_array = np.array(img_paths)[time_pt1:time_pt2]
     dataset['vid_name'] = np.array(vid_names)[time_pt1:time_pt2]
-    # print(dataset['vid_name'].shape)
     dataset['frame_id'] = data['fnames'][time_pt1:time_pt2]
     dataset['img_name'] = img_paths_array
     dataset['joints3D'] = j3d.numpy()
@@ -102,7 +99,6 @@ def read_data(folder, backbone_name):
     dataset['shape'] = shape.numpy()
     dataset['pose'] = pose.numpy()
     dataset['bbox'] = bbox
-    # dataset['valid'].append(campose_valid[time_pt1:time_pt2])
 
     features = extract_features(model, img_paths_array, bbox, kp_2d=j2d[time_pt1:time_pt2], debug=debug,
                                 dataset='ssp3d', scale=1.2, model_name=backbone_name)
@@ -118,7 +114,5 @@ if __name__ == '__main__':
     debug = False
 
     dataset = read_data(folder=args.dir, backbone_name='spin')
-    # print(dataset['vid_name'])
-    # exit()
     joblib.dump(dataset, osp.join(VIBE_DB_DIR, 'ssp3d_val_db.pt'))
     print("ssp3d_test_db set success !!!")

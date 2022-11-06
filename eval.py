@@ -3,7 +3,7 @@ import torch
 
 from lib.dataset import ThreeDPW, ssp3d, MPII3D
 from lib.models import VIBE, VIBE_LSTM
-from lib.core.evaluate import Evaluator
+from lib.core.main import Evaluator
 from lib.core.config import parse_args
 from torch.utils.data import DataLoader
 
