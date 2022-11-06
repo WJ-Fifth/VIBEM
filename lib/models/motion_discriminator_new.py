@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# By Mengfan Yan
+# By Mengfan Yan (u7375900)
 # The code refers to the motion_discriminator.py implemented by VIBE
 
 import torch

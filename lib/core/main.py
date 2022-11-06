@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# By Ruijia Tan (u7383615)
+# merge and improve the train and evaluation code
+
+
 import time
 import torch
 import shutil
@@ -29,6 +34,18 @@ def save_model(generator, gen_optimizer,
                logdir,
                performance_type,
                best_performance):
+    """
+    :param generator: generator model in this project
+    :param gen_optimizer: get optimizer with generator model
+    :param motion_discriminator: the motion discriminator with lstm or gru model
+    :param dis_motion_optimizer: get optimizer with motion discriminator model
+    :param performance: the performance in this epoch
+    :param epoch: the number of epoch
+    :param logdir: the path about logger file
+    :param performance_type: which evaluation use in save key value (PA-MPJPE)
+    :param best_performance: the best performance before this epoch
+    :return: the best performance after update
+    """
     save_dict = {
         'epoch': epoch,
         'gen_state_dict': generator.state_dict(),
@@ -83,6 +100,9 @@ def resume_pretrained(model_path,
 def validate(model,
              accumulators,
              test_loader):
+    """
+    save the logger document in train and evaluation times
+    """
     model.eval()
 
     start = time.time()
@@ -229,6 +249,15 @@ def evaluate(data_name,
         return source_points_hat
 
     def keypoint_3d_pck(pred, gt, mask, alignment='none', threshold=0.15):
+        """
+        :param pred: the output in generator model
+        :param gt: the ground true label in dataset
+        :param mask: choice each value in pred and gt
+        :param alignment:
+        :param threshold: the threshold in compute
+        :return: the keypoint 3d pck value in the pred output
+        """
+
         assert mask.any()
 
         if alignment == 'none':

@@ -44,6 +44,8 @@ Run the commands below to start training:
 ```shell script
 # prepare the training, evaluation dataset
 source scripts/prepare_training_data.sh
+# prepare the evaluation and pre-trained backbone in VIBE.
+source scripts/prepare_data.sh
 
 # THE config file save in configs
 python train.py --cfg configs/config.yaml
@@ -53,18 +55,19 @@ python train.py --cfg configs/config.yaml
 Here we compare VIBE and VIBEM result. Evaluation metric is
 Procrustes Aligned Mean Per Joint Position Error (PA-MPJPE) in mm.
 
-Please download our checkpoint about VIBEM on Google Drive [here]
+Please download our checkpoint about VIBEM on Google Drive [here](https://drive.google.com/file/d/1J77gZxEQ_Ge5PROuzDVHE2pN-rpdoReS/view?usp=share_link), 
+and save the checkpoint in data/vibe_data/
 
-| Models  | 3DPW &#8595; | MPI-INF-3DHP &#8595; | SSP_3D &#8595; |
-|---------|:------------:|:--------------------:|:--------------:|
-| VIBE    |     63.8     |         67.2         |      64.2      |   
-| VIBE_l2 |     65.6     |         68.5         |      63.1      | 
-| VIBEM   |   **55.2**   |       **65.9**       |   **632.6**    | 
+| Models      | 3DPW &#8595; | MPI-INF-3DHP &#8595; | SSP_3D &#8595; |
+|-------------|:------------:|:--------------------:|:--------------:|
+| VIBE        |     63.8     |         67.2         |      64.2      |   
+| VIBE_l2-SL  |     65.6     |         68.5         |      63.1      | 
+| VIBEM_l2-SL |   **55.2**   |       **65.9**       |   **632.6**    | 
 
 
 ```shell script
 
 # THE config file save in configs
 # if you want to use ssp_3d dataset, please use the len_seq = 2 because the length of ssp_3d is really small.
-python eval.py --cfg configs/config_kstn_eval.yaml
+python eval.py --cfg configs/config_lstm_eval.yaml
 ```
