@@ -17,7 +17,7 @@ LOSS:
 TRAIN:
   BATCH_SIZE: 64
   NUM_ITERS_PER_EPOCH: 500
-  PRETRAINED: 'data/vibe_data/checkpoint.pth.tar'
+  PRETRAINED: 'data/vibe_data/model_best_lstm.pth.tar'
 #  PRETRAINED: ''
   PRETRAINED_REGRESSOR: 'data/vibe_data/spin_model_checkpoint.pth.tar'
   RESUME: ''
@@ -48,7 +48,7 @@ TRAIN:
       SIZE: 1024
       DROPOUT: 0.2
 MODEL:
-  TEMPORAL_TYPE: 'gru'
+  TEMPORAL_TYPE: 'lstm'
   DISCRIMINATOR: 'norm'
   TGRU:
     NUM_LAYERS: 2

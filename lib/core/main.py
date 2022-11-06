@@ -54,6 +54,8 @@ def save_model(generator, gen_optimizer,
         with open(osp.join(logdir, 'best.txt'), 'w') as f:
             f.write(str(float(performance)))
 
+    return best_performance
+
 
 def resume_pretrained(model_path,
                       generator,
@@ -532,15 +534,15 @@ class Train():
 
             logger.info(f'Epoch {epoch + 1} performance: {performance:.4f}')
 
-            save_model(generator=self.generator,
-                       motion_discriminator=self.motion_discriminator,
-                       dis_motion_optimizer=self.dis_motion_optimizer,
-                       performance=performance,
-                       epoch=epoch,
-                       logdir=self.logdir,
-                       performance_type=self.performance_type,
-                       best_performance=self.best_performance,
-                       gen_optimizer=self.gen_optimizer)
+            self.best_performance = save_model(generator=self.generator,
+                                               motion_discriminator=self.motion_discriminator,
+                                               dis_motion_optimizer=self.dis_motion_optimizer,
+                                               performance=performance,
+                                               epoch=epoch,
+                                               logdir=self.logdir,
+                                               performance_type=self.performance_type,
+                                               best_performance=self.best_performance,
+                                               gen_optimizer=self.gen_optimizer)
 
             if performance > 100.0:
                 exit(f'MPJPE error is {performance}, higher than 100.0. Exiting!...')

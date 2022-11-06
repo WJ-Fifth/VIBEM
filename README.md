@@ -53,16 +53,18 @@ python train.py --cfg configs/config.yaml
 Here we compare VIBE and VIBEM result. Evaluation metric is
 Procrustes Aligned Mean Per Joint Position Error (PA-MPJPE) in mm.
 
-| Models       | 3DPW &#8595; | MPI-INF-3DHP &#8595; | H36M &#8595; | SSP_3D |
-|--------------|:----:|:------------:|:----:|:--------------:|
-| SPIN         | 59.2 |     67.5     | **41.1** |       -        |
-| Temporal HMR | 76.7 |     89.8     | 56.8 |       -        |
-| VIBE         | 56.5 |     **63.4**     | 41.5 |    **63.7**    |
+Please download our checkpoint about VIBEM on Google Drive [here]
+
+| Models  | 3DPW &#8595; | MPI-INF-3DHP &#8595; | SSP_3D &#8595; |
+|---------|:------------:|:--------------------:|:--------------:|
+| VIBE    |     63.8     |         67.2         |      64.2      |   
+| VIBE_l2 |     65.6     |         68.5         |      63.1      | 
+| VIBEM   |   **55.2**   |       **65.9**       |   **632.6**    | 
 
 
 ```shell script
 
 # THE config file save in configs
 # if you want to use ssp_3d dataset, please use the len_seq = 2 because the length of ssp_3d is really small.
-python eval.py --cfg configs/config.yaml
+python eval.py --cfg configs/config_kstn_eval.yaml
 ```

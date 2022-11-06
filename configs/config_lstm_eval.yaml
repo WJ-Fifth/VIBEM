@@ -17,7 +17,7 @@ LOSS:
 TRAIN:
   BATCH_SIZE: 64
   NUM_ITERS_PER_EPOCH: 500
-  PRETRAINED: 'data/vibe_data/model_best_lstm_l2sgan.pth.tar'
+  PRETRAINED: 'data/vibe_data/model_best_lstm.pth.tar'
 #  PRETRAINED: ''
   PRETRAINED_REGRESSOR: 'data/vibe_data/spin_model_checkpoint.pth.tar'
   RESUME: ''

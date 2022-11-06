@@ -3,7 +3,7 @@
 Run the commands below to evaluate a pretrained model.
 
 ```shell script
-python eval.py --cfg configs/config_lstm_geoloss.yaml
+python eval.py --cfg configs/config_lstm_train.yaml
 ```
 
 Change the `TRAIN.PRETRAINED` field of the config file to the checkpoint you would like to evaluate.

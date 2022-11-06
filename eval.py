@@ -11,27 +11,29 @@ from torch.utils.data import DataLoader
 def main(cfg):
     print('...Evaluating on {} test set...'.format(cfg.TRAIN.DATASET_EVAL))
 
-    # model = VIBE(
-    #     n_layers=cfg.MODEL.TGRU.NUM_LAYERS,
-    #     batch_size=cfg.TRAIN.BATCH_SIZE,
-    #     seqlen=cfg.DATASET.SEQLEN,
-    #     hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
-    #     pretrained=cfg.TRAIN.PRETRAINED_REGRESSOR,
-    #     add_linear=cfg.MODEL.TGRU.ADD_LINEAR,
-    #     bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
-    #     use_residual=cfg.MODEL.TGRU.RESIDUAL,
-    # ).to(cfg.DEVICE)
+    if cfg.MODEL.TEMPORAL_TYPE == 'gru':
+        model = VIBE(
+            n_layers=cfg.MODEL.TGRU.NUM_LAYERS,
+            batch_size=cfg.TRAIN.BATCH_SIZE,
+            seqlen=cfg.DATASET.SEQLEN,
+            hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
+            pretrained=cfg.TRAIN.PRETRAINED_REGRESSOR,
+            add_linear=cfg.MODEL.TGRU.ADD_LINEAR,
+            bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
+            use_residual=cfg.MODEL.TGRU.RESIDUAL,
+        ).to(cfg.DEVICE)
 
-    model = VIBE_LSTM(
-        num_layers=cfg.MODEL.TGRU.NUM_LAYERS,
-        batch=cfg.TRAIN.BATCH_SIZE,
-        sequences=cfg.DATASET.SEQLEN,
-        hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
-        pre=cfg.TRAIN.PRETRAINED_REGRESSOR,
-        linear=cfg.MODEL.TGRU.ADD_LINEAR,
-        bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
-        residual=cfg.MODEL.TGRU.RESIDUAL,
-    ).to(cfg.DEVICE)
+    elif cfg.MODEL.TEMPORAL_TYPE == 'lstm':
+        model = VIBE_LSTM(
+            num_layers=cfg.MODEL.TGRU.NUM_LAYERS,
+            batch=cfg.TRAIN.BATCH_SIZE,
+            sequences=cfg.DATASET.SEQLEN,
+            hidden_size=cfg.MODEL.TGRU.HIDDEN_SIZE,
+            pre=cfg.TRAIN.PRETRAINED_REGRESSOR,
+            linear=cfg.MODEL.TGRU.ADD_LINEAR,
+            bidirectional=cfg.MODEL.TGRU.BIDIRECTIONAL,
+            residual=cfg.MODEL.TGRU.RESIDUAL,
+        ).to(cfg.DEVICE)
 
     if cfg.TRAIN.PRETRAINED != '' and os.path.isfile(cfg.TRAIN.PRETRAINED):
         checkpoint = torch.load(cfg.TRAIN.PRETRAINED)

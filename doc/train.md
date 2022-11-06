@@ -132,7 +132,7 @@ posetrack
 Run the command below to start training.
 
 ```shell script
-python train.py --cfg configs/config_lstm_geoloss.yaml
+python train.py --cfg configs/config_lstm_train.yaml
 ```
 
 See [`configs/config.yaml`](configs/config.yaml) or [`config.py`](lib/core/config.py) to 
