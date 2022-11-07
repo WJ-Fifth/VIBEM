@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # By Mengfan Yan (u7375900)
 # The code refers to the motion_discriminator.py implemented by VIBE
+# In the motion discriminator, the human pose is extracted using LSTM.
 
 import torch
 import torch.nn as nn

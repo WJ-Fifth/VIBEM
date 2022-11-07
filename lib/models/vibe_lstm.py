@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # By Mengfan Yan (u7375900)
 # The code refers to the vibe model implemented by VIBE
+# Using LSTM instead of GRU as the new gating unit
 
 import os
 import torch
@@ -21,10 +22,10 @@ class TemporalEncoder(nn.Module):
     sent g_i to regressor (SMPL)
 
     Parameters:
-        num_layers: the number of the recurrent layers in GRU
-        hidden_size: the number of hidden states in GRU (output size: hidden_size * D)
-        linear: fed with one direction of GRU
-        bidirectional: fed with double direction GRU
+        num_layers: the number of the recurrent layers in LSTM
+        hidden_size: the number of hidden states in LSTM (output size: hidden_size * D)
+        linear: fed with one direction of LSTM
+        bidirectional: fed with double direction LSTM
         residual:
     """
 
@@ -43,11 +44,9 @@ class TemporalEncoder(nn.Module):
             self.linear = nn.Linear(2 * hidden_size, 2048)
         elif add_linear:
             self.linear = nn.Linear(hidden_size, 2048)
-            # print("Test!!!=", self.linear)
         else:
             self.linear = None
         # set residual
-        # print("hidden_size=", self.linear)
         self.residual = residual
 
     def forward(self, x):
@@ -84,10 +83,10 @@ class VIBE_LSTM(nn.Module):
     Parameters:
         sequences: length of time sequences
         batch: batch size
-        num_layers: the number of the recurrent layers in GRU
-        hidden_size: the number of hidden states in GRU (output size: hidden_size * D)
-        linear: fed with one direction of GRU
-        bidirectional: fed with double direction GRU
+        num_layers: the number of the recurrent layers in LSTM
+        hidden_size: the number of hidden states in LSTM (output size: hidden_size * D)
+        linear: fed with one direction of LSTM
+        bidirectional: fed with double direction LSTM
         residual:
         pre: pretrained model
     """
@@ -140,10 +139,10 @@ class VIBE_LSTM_Demo(nn.Module):
     Parameters:
         sequences: length of time sequences
         batch: batch size
-        num_layers: the number of the recurrent layers in GRU
-        hidden_size: the number of hidden states in GRU (output size: hidden_size * D)
-        linear: fed with one direction of GRU
-        bidirectional: fed with double direction GRU
+        num_layers: the number of the recurrent layers in LSTM
+        hidden_size: the number of hidden states in LSTM (output size: hidden_size * D)
+        linear: fed with one direction of LSTM
+        bidirectional: fed with double direction LSTM
         residual:
         pre: pretrained model
         hmr: pretained model to test

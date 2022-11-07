@@ -59,10 +59,10 @@ Please download our checkpoint about VIBEM on Google Drive [here](https://drive.
 and save the checkpoint in data/vibe_data/
 
 | Models      | 3DPW &#8595; | MPI-INF-3DHP &#8595; | SSP_3D &#8595; |
-|-------------|:------------:|:--------------------:|:--------------:|
-| VIBE        |     63.8     |         67.2         |      64.2      |   
-| VIBE_l2-SL  |     65.6     |         68.5         |      63.1      | 
-| VIBEM_l2-SL |   **55.2**   |       **65.9**       |   **632.6**    | 
+| ----------- | :----------: | :------------------: | :------------: |
+| VIBE        |     63.8     |         67.2         |      64.2      |
+| VIBE_l2-SL  |     58.6     |         68.5         |      63.1      |
+| VIBEM_l2-SL |   **55.2**   |       **65.9**       |    **62.6**    |
 
 
 ```shell script
